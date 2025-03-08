@@ -1,0 +1,191 @@
+/* General Page Styles */
+.page {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f4e4c1; /* Backup color in case the image doesn't load */
+  }
+  
+  /* Background Image */
+  .background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+  }
+  
+  /* Header */
+  .header {
+    background-color: #002c3e;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .logoContainer {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  /* Main Container */
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    width: 60%;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* File Input */
+  .fileSelectBar {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .fileInput {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  /* File Viewer */
+  .fileContainer {
+    width: 100%;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .pdfViewer {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  
+  /* Action Buttons */
+  .buttonContainer {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+  }
+  
+  .actionButton {
+    padding: 10px 20px;
+    background-color: #ff9900;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .actionButton:hover {
+    background-color: #e68a00;
+  }  
+
+  /* Style for the file dropdown */
+.fileDropdown {
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    background-color: white; /* Background color */
+    color: #333; /* Default text color */
+  }
+  
+  /* Style for dropdown options */
+  .fileDropdown option {
+    background-color: white; /* Background color */
+    color: black; /* Text color for options */
+  }
+/* Invisible hover trigger on the leftmost 5px of the screen */
+.hoverTrigger {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 5px;  /* Very thin edge trigger */
+  height: 100vh;
+  background-color: transparent; /* Invisible */
+  z-index: 999;
+}
+
+/* Sidebar Styling */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px; /* Hidden initially */
+  width: 250px;
+  height: 100vh;
+  background-color: #222;
+  color: white;
+  transition: left 0.3s ease-in-out;
+  padding-top: 20px;
+}
+
+/* Show sidebar */
+.sidebar.visible {
+  left: 0;
+}
+
+/* Sidebar Header (Logo & Title) */
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Sidebar Title */
+.sidebarTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+}
+
+/* Navigation Menu */
+.navMenu {
+  margin-top: 15px;
+}
+
+.navMenu ul {
+  list-style: none;
+  padding: 0;
+}
+
+.navMenu li {
+  padding: 10px 15px;
+}
+
+.navMenu a {
+  text-decoration: none;
+  color: white;
+  font-size: 1rem;
+}
