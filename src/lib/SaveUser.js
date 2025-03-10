@@ -1,5 +1,4 @@
 import { supabase } from "@/app/utils/supabaseClient";
-import { useRouter } from "next/navigation";
 
 // Returns the current Philippines time in ISO format with the +08:00 offset
 export const getPHTime = () => {
@@ -19,6 +18,21 @@ export const saveUserSession = async (session) => {
   const phTimestamp = getPHTime();
 
   try {
+    // Check if user already exists
+    const { data: existingUser, error: fetchError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (fetchError && fetchError.code !== "PGRST116") {
+      console.error("Error checking existing user:", fetchError.message);
+      return null;
+    }
+
+    // If user exists, keep their role; otherwise, set role to "user"
+    const role = existingUser ? existingUser.role : "user";
+
     // Upsert user data
     const { data: userData, error } = await supabase
       .from("users")
@@ -30,9 +44,9 @@ export const saveUserSession = async (session) => {
           picture: user.user_metadata?.avatar_url || "",
           last_logged_in: phTimestamp,
           created_at: user.created_at,
-          role: "user"
+          role: role, // Keep existing role or assign "user" for new accounts
         },
-        { onConflict: "email" }
+        { onConflict: "id" }
       )
       .select()
       .single();

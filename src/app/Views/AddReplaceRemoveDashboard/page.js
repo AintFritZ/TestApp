@@ -4,12 +4,15 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { fetchFiles, uploadFile, removeFile } from "@/lib/AddRemoveFileFromBucket";
 import Sidebar from "@/lib/Sidebar";
+import { useRouter } from "next/navigation";
 import styles from "../../../CSS/AddReplaceRemoveDashboard.module.css";
 
 export default function Admin() {
   const [files, setFiles] = useState([]);
   const [selectedFileUrl, setSelectedFileUrl] = useState("");
   const [selectedFileName, setSelectedFileName] = useState("");
+
+  const router = useRouter();
 
   useEffect(() => {
     fetchFiles(setFiles);
@@ -20,6 +23,11 @@ export default function Admin() {
     const file = files.find((f) => f.name === fileName);
     setSelectedFileName(fileName);
     setSelectedFileUrl(file ? file.publicUrl : "");
+  };
+
+  const handleLogout = () => {
+    // Implement any additional logout logic here, such as clearing auth tokens.
+    router.push('/');
   };
 
   return (
@@ -33,6 +41,11 @@ export default function Admin() {
 
       {/* Main Container */}
       <div className={styles.container}>
+        {/* Logout Button positioned at the top right */}
+        <button className={styles.logoutButton} onClick={handleLogout}>
+          Logout
+        </button>
+
         {/* File Dropdown Selection */}
         <div className={styles.fileSelectBar}>
           <select className={styles.fileDropdown} onChange={handleFileSelect} value={selectedFileName}>
@@ -52,7 +65,9 @@ export default function Admin() {
 
         {/* File Upload & Remove Buttons */}
         <div className={styles.buttonContainer}>
-          <button className={styles.actionButton} onClick={() => uploadFile(setFiles)}>ADD FILE</button>
+          <button className={styles.actionButton} onClick={() => uploadFile(setFiles)}>
+            ADD FILE
+          </button>
           <button className={styles.actionButton} onClick={() => removeFile(selectedFileName, setFiles, setSelectedFileName, setSelectedFileUrl)}>
             REMOVE FILE
           </button>

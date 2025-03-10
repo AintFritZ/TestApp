@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import Image from "next/image";
 import Sidebar from "@/lib/Sidebar";
 import { useUserTable } from "@/lib/CallUserTable";
+import { useRouter } from "next/navigation";
 
 export default function Admin() {
   const {
@@ -17,18 +18,36 @@ export default function Admin() {
     setSortField,
     updateUserRole,
     currentUserRole,
-    getAllowedRoles, // Fetch allowed roles dynamically
+    getAllowedRoles,
   } = useUserTable();
+
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // Implement any additional logout logic here, such as clearing auth tokens.
+    router.push('/');
+  };
 
   return (
     <div className={styles.page}>
       <Sidebar />
 
       <div className={styles.background}>
-        <Image src="/PastelBG.jpg" alt="Background" fill objectFit="cover" priority />
+        <Image
+          src="/PastelBG.jpg"
+          alt="Background"
+          fill
+          objectFit="cover"
+          priority
+        />
       </div>
 
       <div className={styles.container}>
+        {/* Logout Button positioned at the top right */}
+        <button className={styles.logoutButton} onClick={handleLogout}>
+          Logout
+        </button>
+
         <div className={styles.controls}>
           <input
             type="text"
@@ -66,7 +85,9 @@ export default function Admin() {
                   <td>{user.email}</td>
                   <td>{user.name}</td>
                   <td>
-                    {currentUserRole !== "user" && currentUserRole !== user.role ? (
+                    {(currentUserRole === "Super Admin" ||
+                      (currentUserRole === "Admin" && user.role !== "Super Admin")) &&
+                    currentUserRole !== user.role ? (
                       <select
                         value={user.role}
                         onChange={(e) => updateUserRole(user.id, e.target.value)}

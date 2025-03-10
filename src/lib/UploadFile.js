@@ -61,7 +61,7 @@ export async function uploadFile(file) {
     .insert([
       {
         user_id: userId,
-        file_owner: userEmail, // Store file owner's email
+        file_owner: userEmail,
         file_name: fileName,
         file_url: publicURL,
         uploaded_at: new Date(),

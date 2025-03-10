@@ -1,44 +1,44 @@
-"use client"; // Mark as client-side component
-
+"use client";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import { useRouter } from "next/navigation";
 import styles from "../../../CSS/LandingPage.module.css";
 import { uploadFile, deleteFile } from "@/lib/UploadFile";
 import { fetchBucketFiles } from "@/lib/FetchBucketFiles";
-import { supabase } from "@/app/utils/supabaseClient"; // Correct supabase import path
+import { supabase } from "@/app/utils/supabaseClient";
 
 export default function Home() {
-  const router = useRouter(); // Initialize router for navigation
+  const router = useRouter();
   const fileInputRef = useRef(null);
-  const [uploadedFile, setUploadedFile] = useState(null); // Store uploaded file
-  const [fileUrl, setFileUrl] = useState(""); // Uploaded file URL (left container)
-  const [bucketFiles, setBucketFiles] = useState([]); // Files from Supabase bucket
-  const [selectedFileUrl, setSelectedFileUrl] = useState(""); // Selected file URL (right container)
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [fileUrl, setFileUrl] = useState("");
+  const [bucketFiles, setBucketFiles] = useState([]);
+  const [selectedFileUrl, setSelectedFileUrl] = useState("");
+  const [isReplacing, setIsReplacing] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState(null);
 
-  // Fetch files from Supabase bucket on mount
+  // On mount: check for any stored file name and fetch bucket files
   useEffect(() => {
     const storedFileName = localStorage.getItem("uploadedFileName");
 
     if (storedFileName) {
       (async () => {
-        await deleteFile(storedFileName); // Delete old file if needed
-        localStorage.removeItem("uploadedFileName"); // Clear stored file name
-        setFileUrl(""); // Reset file URL
+        await deleteFile(storedFileName);
+        localStorage.removeItem("uploadedFileName");
+        setFileUrl("");
       })();
     }
 
-    // Fetch files from "neu_curriculum" bucket
+    // Fetch files from the bucket
     const fetchFiles = async () => {
       const files = await fetchBucketFiles();
-      console.log("Fetched bucket files:", files); // Debugging
-      setBucketFiles(files); // Update state with fetched files
+      setBucketFiles(files);
     };
 
     fetchFiles();
   }, []);
 
-  // Handle file upload
+  // Handle file upload (or replacement)
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -48,35 +48,57 @@ export default function Home() {
       return;
     }
 
-    setUploadedFile(file); // Store uploaded file
+    setUploadedFile(file);
+
+    // If replacing an existing file, delete the old one first
+    if (isReplacing && uploadedFileName) {
+      const deleteResponse = await deleteFile(uploadedFileName);
+      if (deleteResponse.error) {
+        console.error("Error replacing file, deletion failed:", deleteResponse.error);
+      } else {
+        console.log("Old file replaced successfully");
+      }
+      localStorage.removeItem("uploadedFileName");
+    }
 
     try {
-      const uploadResponse = await uploadFile(file); // Upload file
+      const uploadResponse = await uploadFile(file);
       if (uploadResponse.error) {
         console.error("File upload failed:", uploadResponse.error);
       } else {
         console.log("File uploaded successfully:", uploadResponse.url);
-        setFileUrl(uploadResponse.url); // Show uploaded file in left container
+        setFileUrl(uploadResponse.url);
+        setUploadedFileName(uploadResponse.fileName);
+        localStorage.setItem("uploadedFileName", uploadResponse.fileName);
       }
     } catch (error) {
       console.error("Unexpected error during file upload:", error);
     }
+
+    if (isReplacing) {
+      setIsReplacing(false);
+    }
   };
 
-  // Handle selection of file from dropdown
+  // Handle file selection from the dropdown
   const handleSelectFile = (event) => {
-    setSelectedFileUrl(event.target.value); // Update selected file URL for iframe
+    setSelectedFileUrl(event.target.value);
+  };
+
+  // Trigger file input for replacing file
+  const handleReplaceFile = () => {
+    if (!fileInputRef.current) return;
+    setIsReplacing(true);
+    fileInputRef.current.click();
   };
 
   // Logout handler
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut(); // Log the user out
+    const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error logging out:", error.message);
     } else {
-      // Redirect to the login page after logout
-      console.log("User logged out successfully");
-      router.push("/"); // Redirect to login page
+      router.push("/");
     }
   };
 
@@ -93,7 +115,6 @@ export default function Home() {
           <Image src="/NEULogo.png" alt="Neu Logo" width={50} height={50} />
           <span className={styles.title}>NeuCompare</span>
         </div>
-        {/* Logout Button */}
         <button className={styles.logoutButton} onClick={handleLogout}>
           Logout
         </button>
@@ -101,16 +122,27 @@ export default function Home() {
 
       {/* Main Containers */}
       <div className={styles.container}>
-        {/* Left Container: Uploaded file */}
-        <div className={styles.fileContainer}>
-          {!uploadedFile && (
-            <button
-              className={styles.uploadButton}
-              onClick={() => fileInputRef.current.click()}
-            >
-              Upload File
-            </button>
-          )}
+        {/* LEFT CONTAINER: Uploaded file & buttons */}
+        <div className={styles.rightContainer}>
+          {/* File Selection Bar */}
+          <div className={styles.fileSelectBar}>
+            {!fileUrl ? (
+              <button
+                className={styles.uploadButton}
+                onClick={() => fileInputRef.current.click()}
+              >
+                Upload File
+              </button>
+            ) : (
+              <button
+                className={styles.uploadButton}
+                onClick={handleReplaceFile}
+              >
+                Replace File
+              </button>
+            )}
+          </div>
+
           <input
             type="file"
             ref={fileInputRef}
@@ -119,22 +151,22 @@ export default function Home() {
             onChange={handleFileChange}
           />
 
-          {/* Display Uploaded File in Left Container */}
-          {fileUrl && (
-            <iframe src={fileUrl} className={styles.pdfViewer}></iframe>
-          )}
+          <div className={styles.fileContainer}>
+            {fileUrl && <iframe src={fileUrl} className={styles.pdfViewer}></iframe>}
+          </div>
         </div>
 
-        {/* Right Container (File Selection + Viewer) */}
+        {/* RIGHT CONTAINER: File selection and viewer */}
         <div className={styles.rightContainer}>
-          {/* File Selection Bar (Only Above Right Container) */}
           <div className={styles.fileSelectBar}>
             <select
               className={styles.fileSelectDropdown}
               onChange={handleSelectFile}
               defaultValue=""
             >
-              <option value="" disabled>Select a file</option>
+              <option value="" disabled>
+                Select a file
+              </option>
               {bucketFiles.map((file) => (
                 <option key={file.name} value={file.publicUrl}>
                   {file.name}
@@ -143,11 +175,8 @@ export default function Home() {
             </select>
           </div>
 
-          {/* Display Selected File */}
           <div className={styles.fileContainer}>
-            {selectedFileUrl && (
-              <iframe src={selectedFileUrl} className={styles.pdfViewer}></iframe>
-            )}
+            {selectedFileUrl && <iframe src={selectedFileUrl} className={styles.pdfViewer}></iframe>}
           </div>
         </div>
       </div>
